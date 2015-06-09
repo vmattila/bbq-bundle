@@ -6,9 +6,15 @@
         <parameter key="eventio_bbq.defaults.queue.pheanstalk.class">Eventio\BBQ\Queue\PheanstalkTubeQueue</parameter>
         <parameter key="eventio_bbq.defaults.queue.predis.class">Eventio\BBQ\Queue\RedisQueue</parameter>
         <parameter key="eventio_bbq.defaults.queue.directory.class">Eventio\BBQ\Queue\DirectoryQueue</parameter>
+        <parameter key="eventio_bbq.defaults.queue.deferring.class">Eventio\BBQBundle\DeferringOuterQueue</parameter>
     </parameters>
     
     <services>
         <service id="eventio_bbq" class="Eventio\BBQ"></service>
+        <service id="eventio_bbq.deferred_event_queue_listener" class="Eventio\BBQBundle\EventListener\DeferredQueueListener">
+            <argument type="service" id="service_container" />
+            <argument type="service" id="logger" />
+            <tag name="kernel.event_subscriber" />
+        </service>
     </services>
 </container>

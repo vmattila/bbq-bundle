@@ -94,10 +94,29 @@ class EventioBBQExtension extends Extension
                 throw new \Exception('Invalid queue type ' . $type);
             }
 
-            $container->setDefinition(sprintf('eventio_bbq.%s', $queueId), $definition);
+            $deferred = (bool)(isset($queueConfig['deferred']) && $queueConfig['deferred']);
+            if ($deferred) {
+                
+                $container->setDefinition(sprintf('eventio_bbq.%s.real', $queueId), $definition);
+                                
+                $deferredDefinition = new \Symfony\Component\DependencyInjection\Definition();
+                $deferredDefinition->setClass($container->getParameter('eventio_bbq.defaults.queue.deferring.class'));
+                $deferredDefinition->setArguments(array($queueId, new \Symfony\Component\DependencyInjection\Reference(sprintf('eventio_bbq.%s.real', $queueId))));
+                
+                $container->setDefinition(sprintf('eventio_bbq.%s.deferred', $queueId), $deferredDefinition);
+                
+                $container->setAlias(sprintf('eventio_bbq.%s', $queueId), sprintf('eventio_bbq.%s.deferred', $queueId));
+
+                // Registering deferred queue to the listener
+                $container->getDefinition('eventio_bbq.deferred_event_queue_listener')
+                    ->addMethodCall('addQueue', array(new \Symfony\Component\DependencyInjection\Reference(sprintf('eventio_bbq.%s.deferred', $queueId)) ));
+
+            } else {
+                $container->setDefinition(sprintf('eventio_bbq.%s', $queueId), $definition);
+            }
 
             $container->getDefinition('eventio_bbq')
-                ->addMethodCall('registerQueue', array($container->getDefinition(sprintf('eventio_bbq.%s', $queueId))));
+                ->addMethodCall('registerQueue', array(new \Symfony\Component\DependencyInjection\Reference(sprintf('eventio_bbq.%s', $queueId))));
         }
     }
 
