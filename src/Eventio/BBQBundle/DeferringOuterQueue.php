@@ -60,4 +60,14 @@ class DeferringOuterQueue extends AbstractQueue
     public function clear() {
         $this->deferredJobs = array();
     }
+    
+    public function releaseJob(JobInterface $job)
+    {
+        return $this->innerQueue->releaseJob($job);
+    }
+
+    public function keepAlive(JobInterface $job)
+    {
+        return $this->innerQueue->keepAlive($job);
+    }
 }

@@ -105,7 +105,13 @@ class HandleQueueCommand extends BBQCommand {
 
                     $process = new Process($processCommand, null, null, $jobPayload);
                     $process->setTimeout(3600);
-                    $process->run();
+                    $process->start();
+                    while ($process->isRunning()) {
+                        $process->checkTimeout();
+                        sleep(1);
+                        $this->verboseWrite(9, 'Process is running, waiting (keep alive).');
+                        $queue->keepAlive($job);
+                    }
 
                     // Process should end with a proper exit code if everything goes well
                     if (false === $process->isSuccessful()) {
