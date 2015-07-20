@@ -29,6 +29,10 @@ class DeferredQueueListener implements EventSubscriberInterface
         $this->flush();
     }
     
+    public function onRequestFlush() {
+        $this->flush();
+    }
+    
     private function flush() {
         $queues = $this->queues;
         $this->logger->debug('DeferredQueueListener::flush() - ' . count($queues) . ' queue(s).');
@@ -45,6 +49,7 @@ class DeferredQueueListener implements EventSubscriberInterface
         return array(
             KernelEvents::TERMINATE  => 'onKernelTerminate',
             ConsoleEvents::TERMINATE => 'onConsoleTerminate',
+            'bbq.request_flush' => 'onRequestFlush',
         );
     }
 
